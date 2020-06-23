@@ -6,7 +6,6 @@ const http = require("http"),
   app = express();
 
 app.get("/", (request, response) => {
-  console.log(Date.now() + " Ping Received");
   response.sendStatus(200);
 });
 app.listen(process.env.PORT);
@@ -24,6 +23,29 @@ const Discord = require("discord.js"),
   schedule = require("node-schedule"),
   emojiList = require("./info/reaction-roles.json"),
   prefix = "!";
+/*╔═══════════════════════════════════════╗
+    Errors
+  ╚═══════════════════════════════════════╝*/
+process.on("error", error =>
+  client.users.cache
+    .get("338649491894829057")
+    .send("This is an error event:" + error.stack)
+);
+client.on("error", error =>
+  client.users.cache
+    .get("338649491894829057")
+    .send("This is an error event:" + error.stack)
+);
+process.on("uncaughtException", error =>
+  client.users.cache
+    .get("338649491894829057")
+    .send("This is an error event:" + error.stack)
+);
+process.on("unhandledRejection", error =>
+  client.users.cache
+    .get("338649491894829057")
+    .send("This is an error event:" + error.stack)
+);
 
 /*╔═══════════════════════════════════════╗
     Bot
@@ -45,8 +67,8 @@ client.on("guildMemberAdd", member => {
 
 const updateScheduleMessage = schedule.scheduleJob("*/5 * * * * *", function() {
   functions.scrimScheduler(client);
-console.log("updated")
 });
+
 /*╔═══════════════════════════════════════╗
     Schedules
   ╚═══════════════════════════════════════╝*/
@@ -56,14 +78,29 @@ const reaction_refresh = schedule.scheduleJob(
     const guild = client.guilds.cache.get("387015404092129282");
     guild.channels.cache
       .get("715140086269739018")
-      .messages.fetch("716915372758007868")
+      .messages.fetch("717453314132017264")
       .then(msg =>
         msg.reactions
           .removeAll()
-          .catch(error => console.error("Failed to clear reactions: ", error))
+          .then(async msg => {
+            await msg.react("716919649207582762"); //1
+            await msg.react("716919649278885901"); //2
+            await msg.react("716919649446395924"); //3
+            await msg.react("715161638747111464"); //4
+            await msg.react("715161638860226603"); //5
+            await msg.react("633718531191603200"); //6
+            await msg.react("633718531279814692"); //7
+            await msg.react("633718531095265291"); //8
+            await msg.react("633718531061710849"); //9
+            await msg.react("633718530860122123"); //10
+            await msg.react("633708690456707092"); //11
+          })
+          .catch(error =>
+            functions.mention(client, error, "717320158460510279")
+          )
       );
 
-    guild.cache.members.forEach(member => {
+    guild.members.cache.map(member => {
       member.roles.remove([
         "715454691583983677",
         "715454657811447839",
@@ -89,21 +126,21 @@ client.on("messageReactionAdd", async (reaction, user) => {
     try {
       await reaction.fetch();
     } catch (error) {
-      console.log("Something went wrong when fetching the message: ", error);
-      return;
+      functions.mention(client, error, "717320158460510279");
     }
   }
 
-  if (reaction.message.id === "716915372758007868") {
+  else if (reaction.message.id === "717453314132017264") {
     const emojiId = reaction.emoji.id.toString();
     if (
       emojiList.hasOwnProperty(emojiId) ||
       emojiList.hasOwnProperty(reaction.emoji.name)
     ) {
       if (!reaction.message.guild.member.bot) {
-        await reaction.message.guild.member(user).roles.add(emojiList[emojiId].role)
+        await reaction.message.guild
+          .member(user)
+          .roles.add(emojiList[emojiId].role);
         await functions.scrimScheduler(client);
-        
       }
     }
   }
@@ -118,14 +155,16 @@ client.on("messageReactionRemove", async (reaction, user) => {
     }
   }
 
-  if (reaction.message.id === "716915372758007868") {
+  if (reaction.message.id === "717453314132017264") {
     const emojiId = reaction.emoji.id.toString();
     if (
       emojiList.hasOwnProperty(emojiId) ||
       emojiList.hasOwnProperty(reaction.emoji.name)
     ) {
       if (!reaction.message.guild.member.bot) {
-        await reaction.message.guild.member(user).roles.remove(emojiList[emojiId].role)
+        await reaction.message.guild
+          .member(user)
+          .roles.remove(emojiList[emojiId].role);
         await functions.scrimScheduler(client);
       }
     }
@@ -194,7 +233,8 @@ client.on("message", async message => {
         ) ||
         message.cleanContent.startsWith(
           client.user.username.charAt(0).toUpperCase() +
-            client.user.username.slice(1).toLowerCase()
+            client.user.username.slice(1).toLowerCase() +
+            " "
         )) &&
       client.user.id != message.author.id
     ) {
@@ -269,5 +309,36 @@ client.on("message", async message => {
       functions.mention(client, error, "717320158460510279");
     }
   }
+});
+/*╔═══════════════════════════════════════╗
+    Deleted Messages
+  ╚═══════════════════════════════════════╝*/
+client.on("messageDelete", async message => {
+  const entry = await message.guild
+    .fetchAuditLogs({ type: "MESSAGE_DELETE" })
+    .then(audit => audit.entries.first());
+  let user = "";
+  if (
+    entry.extra.channel.id === message.channel.id &&
+    entry.target.id === message.author.id &&
+    entry.createdTimestamp > Date.now() - 5000 &&
+    entry.extra.count >= 1
+  ) {
+    user = entry.executor.username;
+  } else {
+    user = message.author.username;
+  }
+  const delmsg = {
+    embed: {
+      color: 1,
+      description: `${message.content}`,
+      timestamp: "",
+      author: {
+        name: `${user} deleted a message from ${message.author.username} in #${message.channel.name}`
+      }
+    }
+  };
+
+  client.channels.cache.get("718176504437276682").send(delmsg);
 });
 client.login(process.env.BOT);
