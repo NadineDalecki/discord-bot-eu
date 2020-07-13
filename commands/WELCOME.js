@@ -10,7 +10,7 @@ const embed = new Discord.MessageEmbed()
 .addField('Roles', '**Ask <@717431243662295150> for a role!** Start your sentence with Affen and just ask for the role in a somewhat understandable sentence.\n*For example: Affen give me the god damn Looking for team role*\n\n**Available Roles:**\n<@&509787093208399872> Tag this role if you need a substitute for a scrim or want to start a mixed scrim.\n<@&549925842646597651> Need a team? Assign yourself this role.\n**@teams** is a role you can get from an admin once you joined a team. Please only ask teams for a scrim if you have a full team ready for at least an hour', false) 
 
 module.exports = {
-  name: 'post',
+  name: 'welcome-post',
   execute(message) {
     message.delete().catch(_ => { });
     if (message.member.hasPermission('ADMINISTRATOR')) {     

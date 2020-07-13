@@ -20,32 +20,8 @@ const Discord = require("discord.js"),
   text = require("./info/text.js"),
   functions = require("./functions.js"),
   dialogflow = require("@google-cloud/dialogflow"),
-  schedule = require("node-schedule"),
-  emojiList = require("./info/reaction-roles.json"),
+
   prefix = "!";
-/*╔═══════════════════════════════════════╗
-    Errors
-  ╚═══════════════════════════════════════╝*/
-process.on("error", error =>
-  client.users.cache
-    .get("338649491894829057")
-    .send("This is an error event:" + error.stack)
-);
-client.on("error", error =>
-  client.users.cache
-    .get("338649491894829057")
-    .send("This is an error event:" + error.stack)
-);
-process.on("uncaughtException", error =>
-  client.users.cache
-    .get("338649491894829057")
-    .send("This is an error event:" + error.stack)
-);
-process.on("unhandledRejection", error =>
-  client.users.cache
-    .get("338649491894829057")
-    .send("This is an error event:" + error.stack)
-);
 
 /*╔═══════════════════════════════════════╗
     Bot
@@ -65,111 +41,6 @@ client.on("guildMemberAdd", member => {
   }, 3000);
 });
 
-const updateScheduleMessage = schedule.scheduleJob("*/5 * * * * *", function() {
-  functions.scrimScheduler(client);
-});
-
-/*╔═══════════════════════════════════════╗
-    Schedules
-  ╚═══════════════════════════════════════╝*/
-const reaction_refresh = schedule.scheduleJob(
-  { hour: 2, minute: 0, dayOfWeek: [0, new schedule.Range(0, 6)] },
-  function() {
-    const guild = client.guilds.cache.get("387015404092129282");
-    guild.channels.cache
-      .get("715140086269739018")
-      .messages.fetch("717453314132017264")
-      .then(msg =>
-        msg.reactions
-          .removeAll()
-          .then(async msg => {
-            await msg.react("716919649207582762"); //1
-            await msg.react("716919649278885901"); //2
-            await msg.react("716919649446395924"); //3
-            await msg.react("715161638747111464"); //4
-            await msg.react("715161638860226603"); //5
-            await msg.react("633718531191603200"); //6
-            await msg.react("633718531279814692"); //7
-            await msg.react("633718531095265291"); //8
-            await msg.react("633718531061710849"); //9
-            await msg.react("633718530860122123"); //10
-            await msg.react("633708690456707092"); //11
-          })
-          .catch(error =>
-            functions.mention(client, error, "717320158460510279")
-          )
-      );
-
-    guild.members.cache.map(member => {
-      member.roles.remove([
-        "715454691583983677",
-        "715454657811447839",
-        "715454626836643851",
-        "715447115022598257",
-        "715454271767707738",
-        "715454326440722433",
-        "715454356601962507",
-        "715454391586652213",
-        "715454462189371474",
-        "715454514882150420",
-        "715454560214188074"
-      ]);
-    });
-  }
-);
-
-/*╔═══════════════════════════════════════╗
-    Reactions
-  ╚═══════════════════════════════════════╝*/
-client.on("messageReactionAdd", async (reaction, user) => {
-  if (reaction.partial) {
-    try {
-      await reaction.fetch();
-    } catch (error) {
-      functions.mention(client, error, "717320158460510279");
-    }
-  }
-
-  else if (reaction.message.id === "717453314132017264") {
-    const emojiId = reaction.emoji.id.toString();
-    if (
-      emojiList.hasOwnProperty(emojiId) ||
-      emojiList.hasOwnProperty(reaction.emoji.name)
-    ) {
-      if (!reaction.message.guild.member.bot) {
-        await reaction.message.guild
-          .member(user)
-          .roles.add(emojiList[emojiId].role);
-        await functions.scrimScheduler(client);
-      }
-    }
-  }
-});
-client.on("messageReactionRemove", async (reaction, user) => {
-  if (reaction.partial) {
-    try {
-      await reaction.fetch();
-    } catch (error) {
-      functions.mention(client, error, "717320158460510279");
-      return;
-    }
-  }
-
-  if (reaction.message.id === "717453314132017264") {
-    const emojiId = reaction.emoji.id.toString();
-    if (
-      emojiList.hasOwnProperty(emojiId) ||
-      emojiList.hasOwnProperty(reaction.emoji.name)
-    ) {
-      if (!reaction.message.guild.member.bot) {
-        await reaction.message.guild
-          .member(user)
-          .roles.remove(emojiList[emojiId].role);
-        await functions.scrimScheduler(client);
-      }
-    }
-  }
-});
 /*╔═══════════════════════════════════════╗
     Message
   ╚═══════════════════════════════════════╝*/
@@ -286,8 +157,8 @@ client.on("message", async message => {
         message.reply(answer.response);
       }
       /*╔═══════════════════════════════════════╗
-    Commands
-  ╚═══════════════════════════════════════╝*/
+          Commands
+        ╚═══════════════════════════════════════╝*/
     } else if (!message.content.startsWith(prefix) || message.author.bot)
       return;
     client.commands = new Discord.Collection();
