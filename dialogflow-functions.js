@@ -2,7 +2,7 @@ const functions = require("./functions.js");
 const fetch = require("node-fetch");
 
 module.exports = {
-  function: async function(client, answer, message) {
+  Function: async function(client, answer, message) {
     if (answer.intent === "history") {
       message.reply(text.History1);
       message.reply(text.History2);
@@ -27,7 +27,7 @@ module.exports = {
       }
     } else {
       message.reply(answer.response);
-      functions.inform(client, answer, message);
+      functions.Inform(client, answer, message);
     }
   }
 };

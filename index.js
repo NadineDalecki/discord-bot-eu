@@ -1,74 +1,74 @@
-/*╔══════════════════════════════════════╗
-    Express
-  ╚═══════════════════════════════════════╝*/
-;(express = require("express")), (app = express())
-
-app.get("/", (request, response) => {
-	response.sendStatus(200)
-})
-app.listen(process.env.PORT)
 /*╔═══════════════════════════════════════╗
-    Bot
+    ALL BOTS
   ╚═══════════════════════════════════════╝*/
-const Discord = require("discord.js")
-const Prefix = "!"
-const client = new Discord.Client({ partials: ["MESSAGE", "CHANNEL", "REACTION"] })
-const roleList = require("./info/roles.js")
-const functions = require("./functions.js")
+    const Discord = require("discord.js")
+    const Prefix = "?"
+    const client = new Discord.Client({partials: ["MESSAGE", "CHANNEL", "REACTION"]})
+    const functions = require("./functions.js")
+    const df = require("./dialogflow-functions.js")
 
-client.once("ready", () => {
-	console.log("Ready!")
-})
+    process.on("error", error => functions.Error(client, error));
+    process.on("uncaughtException", error => functions.Error(client, error));
+    process.on("unhandledRejection", error => functions.Error(client, error));
 
-client.on("guildMemberAdd", member => {
+    client.once("ready", () => {client.user.setActivity("the salt server 👀", {url: "https://www.twitch.tv",type:"WATCHING"});console.log("Ready!");});
+    client.on("error", error => functions.Error(client, error));
+    client.on("messageDelete", async message => {functions.DeletedMessage(client, message);});
+    // client.on("messageReactionAdd", async (reaction, user) => {functions.RoleAdd(reaction, user, id)});
+    //client.on("messageReactionRemove", async (reaction, user) => {functions.RoleRemove(reaction, user, id)});
+    client.on("guildMemberAdd", member => {
 	try {
 		const text = require("./info/text.js")
 		setTimeout(function () {
 			member.send(text.Welcome1)
 			member.send(text.Welcome2)
 		}, 3000)
-	} catch (error) {
-		functions.error(client, error)
-	}
-})
-/*╔═══════════════════════════════════════╗
-    Errors
-  ╚═══════════════════════════════════════╝*/
-client.on("error", error => functions.error(client, error))
-process.on("error", error => functions.error(client, error))
-process.on("uncaughtException", error => functions.error(client, error))
-process.on("unhandledRejection", error => functions.error(client, error))
+	} catch (error) {functions.error(client, error)}})
+    //client.on("guildMemberRemove", member => {client.channels.cache.get(process.env.LOG).send(`${member.user.username} left\nMember count: ${member.guild.memberCount}`);});
+    //client.on("guildBanAdd", function(guild, user, member) {client.channels.cache.get(process.env.LOG).send(`${member.user.username} banned\nMember count: ${member.guild.memberCount}`);});
+    client.login(process.env.BOT);
+
+    const express = require("express");
+    const app = express();
+    app.get("/", (request, response) => {
+    response.sendStatus(200);
+    });
+    app.listen(process.env.PORT);
+
 /*╔═══════════════════════════════════════╗
     Message
   ╚═══════════════════════════════════════╝*/
+  
 client.on("message", async message => {
-	/*╔═══════════════════════════════════════╗
+    if  (!message.author.bot) {
+    /*┌───────────────────────────┐
         Mentions
+      └───────────────────────────┘ */
+      const News = ["nada", "na_da"]
+        if (News.includes(message.content.toLowerCase()) && !message.author.bot && !message.content.toLowerCase().includes("canada")) {
+                functions.Mention(client, message, "338649491894829057")
+        } else if (message.content.toLowerCase().includes("sendo") && !message.author.bot && message.guild.id != "632570524463136779") {
+                functions.Mention(client, message, "119095000050040832")
+        }
+    /*╔═══════════════════════════════════════╗
+        Dialogflow
       ╚═══════════════════════════════════════╝*/
-	const news = ["vrl", "vrml", "nada", "na_da", "esl", "vrml"]
-	if (news.includes(message.content.toLowerCase()) && !message.author.bot && !message.content.toLowerCase().includes("canada")) {
-		functions.mention(client, message, "338649491894829057")
-	} else if (message.content.toLowerCase().includes("sendo") && !message.author.bot && message.guild.id != "632570524463136779") {
-		functions.mention(client, message, "119095000050040832")
-	} else if (!message.author.bot) {
-	  /*╔═══════════════════════════════════════╗
-          Dialogflow
-        ╚═══════════════════════════════════════╝*/
-	  /*┌───────────────────────────┐
-          DM
-        └───────────────────────────┘ */
-
-		if (message.channel.type == "dm" && client.user.id != message.author.id && !message.content.startsWith(Prefix)) {
+    /*┌───────────────────────────┐
+        DM
+      └───────────────────────────┘ */ 
+        else if (message.channel.type == "dm" && client.user.id != message.author.id && !message.content.startsWith(Prefix)) {
 			const df = require("./dialogflow-functions.js")
 			const answer = await functions.DialogflowQuery(message, message.cleanContent)
-			df.function(client, answer, message)
-	  /*┌───────────────────────────┐
-          Public Messages
-        └───────────────────────────┘ */
-		} else if ((message.cleanContent.startsWith("@" + client.user.username + " ") || message.cleanContent.startsWith(client.user.username + " ") || message.cleanContent.startsWith(client.user.username.toLowerCase() + " ")) && client.user.id != message.author.id) {
+			df.Function(client, answer, message)
+        }
+    /*┌───────────────────────────┐
+        Public
+      └───────────────────────────┘ */
+        else if ((message.cleanContent.startsWith("@" + client.user.username + " ") || message.cleanContent.startsWith(client.user.username + " ") || message.cleanContent.startsWith(client.user.username.toLowerCase() + " ")) && client.user.id != message.author.id) {
 			const answer = await functions.DialogflowQuery(message, message.cleanContent.split(" ").slice(1).join(" "))
 			//--- Role Assignment ---
 			const euServerList = ["lft", "Scrimmer", "Climbey"]
+            const roleList = require("./info/roles.js")
 			if (euServerList.includes(answer.intent)) {
 				message.guild.member(message.author.id).roles.add(roleList.get(answer.intent))
 				message.reply(answer.response)
@@ -78,36 +78,13 @@ client.on("message", async message => {
 				message.reply(answer.response)
 				//--- Default ---
 			} else {
-				df.function(client, answer, message)
+				df.Function(client, answer, message)
 			}
-		/*╔═══════════════════════════════════════╗
-            Commands
-          ╚═══════════════════════════════════════╝*/
-		} else if (!message.content.startsWith(Prefix) || message.author.bot) return
+        }
+      /*╔═══════════════════════════════════════╗
+          Commands
+        ╚═══════════════════════════════════════╝*/
+        else if (!message.content.startsWith(Prefix) || message.author.bot) return;
+        functions.Command(client, message, Prefix);
+    }});
 
-		client.commands = new Discord.Collection()
-		const fs = require("fs")
-		const commandFiles = fs.readdirSync("./commands").filter(file => file.endsWith(".js"))
-		for (const file of commandFiles) {
-			const command = require(`./commands/${file}`)
-			client.commands.set(command.name, command)
-		}
-		const args = message.content.slice(Prefix.length).split(/ +/)
-		const command = args.shift().toLowerCase()
-		if (!client.commands.has(command)) return
-		try {
-			if (command != "") {
-				client.commands.get(command).execute(message, args)
-			}
-		} catch (error) {
-			functions.error(client, error)
-		}
-	}
-})
-/*╔═══════════════════════════════════════╗
-      Deleted Messages
-  ╚═══════════════════════════════════════╝*/
-client.on("messageDelete", async message => {
-	functions.deletedMessage(client, message)
-})
-client.login(process.env.BOT)
