@@ -18,7 +18,7 @@ module.exports = {
     if (!client.commands.has(command)) return;
     try {
       if (command != "") {
-        client.commands.get(command).execute(message, args);
+        client.commands.get(command).execute(message, args, client);
       }
     } catch (error) {
       console.error(error);
@@ -45,7 +45,7 @@ module.exports = {
         .setColor("#c20000")
         .setAuthor(
           `${user} deleted a message from ${message.author.username} in #${message.channel.name}`,
-          user.displayAvatarURL()
+          user.displayAvatarURL
         )
         .setDescription(`${message.content}`);
 

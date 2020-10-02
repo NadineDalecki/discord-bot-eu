@@ -2,7 +2,7 @@
     ALL BOTS
   ╚═══════════════════════════════════════╝*/
     const Discord = require("discord.js")
-    const Prefix = "?"
+    const Prefix = "!"
     const client = new Discord.Client({partials: ["MESSAGE", "CHANNEL", "REACTION"]})
     const functions = require("./functions.js")
     const df = require("./dialogflow-functions.js")
@@ -13,10 +13,7 @@
 
     client.once("ready", () => {client.user.setActivity("the salt server 👀", {url: "https://www.twitch.tv",type:"WATCHING"});console.log("Ready!");});
     client.on("error", error => functions.Error(client, error));
-    client.on("messageDelete", async message => {functions.DeletedMessage(client, message);});
-    // client.on("messageReactionAdd", async (reaction, user) => {functions.RoleAdd(reaction, user, id)});
-    //client.on("messageReactionRemove", async (reaction, user) => {functions.RoleRemove(reaction, user, id)});
-    client.on("guildMemberAdd", member => {
+        client.on("guildMemberAdd", member => {
 	try {
 		const text = require("./info/text.js")
 		setTimeout(function () {
@@ -24,8 +21,6 @@
 			member.send(text.Welcome2)
 		}, 3000)
 	} catch (error) {functions.error(client, error)}})
-    //client.on("guildMemberRemove", member => {client.channels.cache.get(process.env.LOG).send(`${member.user.username} left\nMember count: ${member.guild.memberCount}`);});
-    //client.on("guildBanAdd", function(guild, user, member) {client.channels.cache.get(process.env.LOG).send(`${member.user.username} banned\nMember count: ${member.guild.memberCount}`);});
     client.login(process.env.BOT);
 
     const express = require("express");
